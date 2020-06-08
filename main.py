@@ -180,8 +180,8 @@ def train(train_loader,epoch, model1, optimizer1, model2, optimizer2):
         if i>args.num_iter_per_epoch:
             break
       
-        images = Variable(images).cuda()
-        labels = Variable(labels).cuda()
+        images = Variable(images)#.cuda()
+        labels = Variable(labels)#.cuda()
         
         # Forward + Backward + Optimize
         logits1=model1(images)
@@ -205,7 +205,7 @@ def train(train_loader,epoch, model1, optimizer1, model2, optimizer2):
         optimizer2.step()
         if (i+1) % args.print_freq == 0:
             print ('Epoch [%d/%d], Iter [%d/%d] Training Accuracy1: %.4F, Training Accuracy2: %.4f, Loss1: %.4f, Loss2: %.4f, Pure Ratio1: %.4f, Pure Ratio2 %.4f' 
-                  %(epoch+1, args.n_epoch, i+1, len(train_dataset)//batch_size, prec1, prec2, loss_1.data[0], loss_2.data[0], np.sum(pure_ratio_1_list)/len(pure_ratio_1_list), np.sum(pure_ratio_2_list)/len(pure_ratio_2_list)))
+                  %(epoch+1, args.n_epoch, i+1, len(train_dataset)//batch_size, prec1, prec2, loss_1.item(), loss_2.item(), np.sum(pure_ratio_1_list)/len(pure_ratio_1_list), np.sum(pure_ratio_2_list)/len(pure_ratio_2_list)))
 
     train_acc1=float(train_correct)/float(train_total)
     train_acc2=float(train_correct2)/float(train_total2)
@@ -218,7 +218,7 @@ def evaluate(test_loader, model1, model2):
     correct1 = 0
     total1 = 0
     for images, labels, _ in test_loader:
-        images = Variable(images).cuda()
+        images = Variable(images) #.cuda()
         logits1 = model1(images)
         outputs1 = F.softmax(logits1, dim=1)
         _, pred1 = torch.max(outputs1.data, 1)
@@ -229,7 +229,7 @@ def evaluate(test_loader, model1, model2):
     correct2 = 0
     total2 = 0
     for images, labels, _ in test_loader:
-        images = Variable(images).cuda()
+        images = Variable(images) #.cuda()
         logits2 = model2(images)
         outputs2 = F.softmax(logits2, dim=1)
         _, pred2 = torch.max(outputs2.data, 1)
@@ -258,12 +258,12 @@ def main():
     # Define models
     print 'building model...'
     cnn1 = CNN(input_channel=input_channel, n_outputs=num_classes)
-    cnn1.cuda()
+    #cnn1.cuda()
     print cnn1.parameters
     optimizer1 = torch.optim.Adam(cnn1.parameters(), lr=learning_rate)
     
     cnn2 = CNN(input_channel=input_channel, n_outputs=num_classes)
-    cnn2.cuda()
+    #cnn2.cuda()
     print cnn2.parameters
     optimizer2 = torch.optim.Adam(cnn2.parameters(), lr=learning_rate)
 
@@ -276,12 +276,13 @@ def main():
     epoch=0
     train_acc1=0
     train_acc2=0
-    # evaluate models with random weights
-    test_acc1, test_acc2=evaluate(test_loader, cnn1, cnn2)
-    print('Epoch [%d/%d] Test Accuracy on the %s test images: Model1 %.4f %% Model2 %.4f %% Pure Ratio1 %.4f %% Pure Ratio2 %.4f %%' % (epoch+1, args.n_epoch, len(test_dataset), test_acc1, test_acc2, mean_pure_ratio1, mean_pure_ratio2))
-    # save results
-    with open(txtfile, "a") as myfile:
-        myfile.write(str(int(epoch)) + ': '  + str(train_acc1) +' '  + str(train_acc2) +' '  + str(test_acc1) + " " + str(test_acc2) + ' '  + str(mean_pure_ratio1) + ' '  + str(mean_pure_ratio2) + "\n")
+
+    # # evaluate models with random weights
+    # test_acc1, test_acc2=evaluate(test_loader, cnn1, cnn2)
+    # print('Epoch [%d/%d] Test Accuracy on the %s test images: Model1 %.4f %% Model2 %.4f %% Pure Ratio1 %.4f %% Pure Ratio2 %.4f %%' % (epoch+1, args.n_epoch, len(test_dataset), test_acc1, test_acc2, mean_pure_ratio1, mean_pure_ratio2))
+    # # save results
+    # with open(txtfile, "a") as myfile:
+    #     myfile.write(str(int(epoch)) + ': '  + str(train_acc1) +' '  + str(train_acc2) +' '  + str(test_acc1) + " " + str(test_acc2) + ' '  + str(mean_pure_ratio1) + ' '  + str(mean_pure_ratio2) + "\n")
 
     # training
     for epoch in range(1, args.n_epoch):
